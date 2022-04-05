@@ -1,5 +1,23 @@
+import os
+import pandas as pd
+import sys
+from reader import get_json_reader
+from writer import load_db_table
+
+
+def process_table(BASE_DIR, connection, table_name):
+    json_reader = get_json_reader(BASE_DIR, table_name)
+    for df in json_reader:
+        load_db_table(df, connection, table_name, df.columns[0])
+
+
 def main():
-    print("Hello World!")
+    BASE_DIR = os.environ.get('BASE_DIR')
+    table_names = sys.argv[1].split(',')
+    configs = dict(os.environ.items())
+    connection = f'postgresql://{configs["DB_USER"]}:{configs["DB_PASS"]}@{configs["DB_HOST"]}:{configs["DB_PORT"]}/{configs["DB_NAME"]}'
+    for table_name in table_names:
+        process_table(BASE_DIR, connection, table_name)
 
 
 if __name__ == '__main__':
